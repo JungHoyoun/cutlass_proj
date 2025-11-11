@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.egg-info
+
+# C++ / CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*.cmake
+!CMakeLists.txt
+build/
+_build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 환경
+venv/
+env/
+ENV/
+
+# 테스트
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 기타
+.DS_Store
+*.log
+
