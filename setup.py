@@ -1,28 +1,17 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import pybind11
 import os
 import subprocess
 import sys
+import torch
 
 # 프로젝트 루트 경로
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# Cutlass 경로
-CUTLASS_ROOT = os.path.join(PROJECT_ROOT, '3rd_party', 'cutlass')
-CUTLASS_INCLUDE = os.path.join(CUTLASS_ROOT, 'include')
-CUTLASS_TOOLS = os.path.join(CUTLASS_ROOT, 'tools')
-
 # PyTorch 경로 찾기
-try:
-    import torch
-    TORCH_PATH = os.path.dirname(torch.__file__)
-    TORCH_LIB = os.path.join(TORCH_PATH, 'lib')
-    TORCH_INCLUDE = os.path.join(TORCH_PATH, 'include')
-except ImportError:
-    TORCH_PATH = None
-    TORCH_LIB = None
-    TORCH_INCLUDE = None
+TORCH_PATH = os.path.dirname(torch.__file__)
+TORCH_LIB = os.path.join(TORCH_PATH, 'lib')
+TORCH_INCLUDE = os.path.join(TORCH_PATH, 'include')
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -45,15 +34,16 @@ class CMakeBuild(build_ext):
         cmake_args = [
             '-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
             '-DPYTHON_EXECUTABLE=' + sys.executable,
-            '-DCUTLASS_ROOT=' + CUTLASS_ROOT,
-            '-DCUTLASS_INCLUDE=' + CUTLASS_INCLUDE,
         ]
         
         # PyTorch 경로 추가
-        if TORCH_PATH:
+        torch_cmake_dir = os.path.join(TORCH_PATH, 'share', 'cmake', 'Torch')
+        if os.path.exists(torch_cmake_dir):
             cmake_args += [
-                '-DTorch_DIR=' + os.path.join(TORCH_PATH, 'share', 'cmake', 'Torch'),
+                '-DTorch_DIR=' + torch_cmake_dir,
             ]
+        else:
+            raise RuntimeError("Torch_DIR not found")
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -68,13 +58,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='cutlass-python',
+    name='cutlass-proj',
     version='0.1.0',
-    author='Your Name',
     description='PyTorch integration for CUTLASS examples',
     long_description=open('README.md').read() if os.path.exists('README.md') else '',
     long_description_content_type='text/markdown',
-    ext_modules=[CMakeExtension('cutlass_python._cutlass', sourcedir=PROJECT_ROOT)],
+    packages=['src'],
+    ext_modules=[CMakeExtension('src._cutlass', sourcedir=PROJECT_ROOT)],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     python_requires='>=3.7',

@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <torch/extension.h>
 #include <cuda_runtime.h>
+#include "cutlass_gemm.h"
 
 namespace py = pybind11;
 
@@ -10,7 +11,13 @@ namespace py = pybind11;
 PYBIND11_MODULE(_cutlass, m) {
     m.doc() = "CUTLASS Python bindings for PyTorch";
     
-    // 여기에 CUTLASS 커널 바인딩 추가
-    // 예: m.def("gemm", &gemm_wrapper, "GEMM operation");
+    // CUTLASS GEMM 바인딩
+    m.def("gemm", &cutlass_gemm_torch, 
+          "CUTLASS GEMM operation",
+          py::arg("A"), 
+          py::arg("B"), 
+          py::arg("C"),
+          py::arg("alpha") = 1.0f,
+          py::arg("beta") = 0.0f);
 }
 

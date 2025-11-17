@@ -1,5 +1,5 @@
 #!/bin/bash
-# 프로젝트 빌드 스크립트
+# Build script: Initialize submodules and build Docker image
 
 set -e
 
@@ -8,15 +8,29 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$PROJECT_ROOT"
 
-# CUTLASS 서브모듈 확인
-if [ ! -d "3rd_party/cutlass/include" ]; then
-    echo "CUTLASS 서브모듈이 없습니다. 초기화 중..."
-    bash scripts/init_submodule.sh
+# Initialize submodules
+if [ ! -d "3rd_party/cutlass" ]; then
+    echo "Initializing CUTLASS submodule..."
+    git submodule add https://github.com/NVIDIA/cutlass.git 3rd_party/cutlass 2>/dev/null || true
+fi
+git submodule update --init --recursive
+
+# Build Docker image
+echo "Building Docker image..."
+docker build -t cutlass_study:latest .
+
+# Run container
+CONTAINER_NAME="cutlass_study_dev"
+if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
 fi
 
-# Python 패키지 설치
-echo "Python 패키지 빌드 및 설치 중..."
-pip install -e .
+docker run -d \
+    --name "$CONTAINER_NAME" \
+    --gpus all \
+    -v "$PROJECT_ROOT:/workspace" \
+    -w /workspace \
+    cutlass_study:latest \
+    tail -f /dev/null
 
-echo "빌드 완료!"
-
+echo "Done! Enter container with: docker exec -it $CONTAINER_NAME bash"

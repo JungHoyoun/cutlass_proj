@@ -3,11 +3,14 @@ requires = ["setuptools>=45", "wheel", "cmake>=3.18", "pybind11>=2.6.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cutlass-python"
+name = "cutlass-proj"
 version = "0.1.0"
 description = "PyTorch integration for CUTLASS examples"
 readme = "README.md"
 requires-python = ">=3.7"
+authors = [
+    {name = "JungHoyoun"}
+]
 dependencies = [
     "torch>=1.9.0",
     "numpy>=1.19.0",
@@ -23,8 +26,8 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["cutlass_python"]
+packages = ["src"]
 
 [tool.setuptools.package-data]
-cutlass_python = ["*.py", "kernels/*.py", "examples/*.py"]
+src = ["*.py"]
 
