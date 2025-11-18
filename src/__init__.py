@@ -1,8 +1,17 @@
 # CUTLASS Python Bindings
-from . import _cutlass
 
-# CUTLASS GEMM 함수를 직접 export
-from ._cutlass import gemm
+# Lazy import to avoid circular import issues
+import sys
+import importlib
 
-__all__ = ['gemm']
+def __getattr__(name):
+    if name == '_cutlass':
+        # Directly import the module to avoid recursion
+        module = importlib.import_module('src._cutlass', package='src')
+        return module
+    if name == 'gemm':
+        module = importlib.import_module('src._cutlass', package='src')
+        return module.gemm
+    raise AttributeError(f"module 'src' has no attribute '{name}'")
 
+__all__ = ['gemm', '_cutlass']

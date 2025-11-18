@@ -37,5 +37,6 @@ htmlcov/
 
 # 기타
 .DS_Store
+*.csv
 *.log
 
